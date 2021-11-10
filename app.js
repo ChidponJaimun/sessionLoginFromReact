@@ -38,18 +38,25 @@ const User = new mongoose.model("User", userSchema);
 
 app.get("/",(req,res)=>{
  res.render("login");
-  // User.findOne({"username":"admin"}, function(err, foundUser) {
-  //   if (err) {
-  //     console.log(err);
-  //   } else {
-  //     if (foundUser) {
-  //       console.log(foundUser)
-  //     }
-  //   }
-  // });
 
-})
 
+});
+
+app.get("/login",(req,res)=>{
+ res.render("login");
+});
+
+app.post("/login",(req,res)=>{
+  User.findOne({"username":"admin"}, function(err, foundUser) {
+    if (err) {
+      console.log(err);
+    } else {
+      if (foundUser) {
+        console.log(foundUser)
+      }
+    }
+  });
+});
 
 
 app.listen(process.env.PORT || 3000, function() {
