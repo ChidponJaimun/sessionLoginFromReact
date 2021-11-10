@@ -11,7 +11,7 @@ const app = express();
 const password = process.env.dbpassword;
 dotenv.config();
 
-mongoose.connect("mongodb+srv://joe:KHB2tPH25DNRWimO@goku.pna51.mongodb.net/checklist?retryWrites=true&w=majority", {
+mongoose.connect("mongodb+srv://joe:"+password+"@goku.pna51.mongodb.net/checklist?retryWrites=true&w=majority", {
   useNewUrlParser: true
 });
 
