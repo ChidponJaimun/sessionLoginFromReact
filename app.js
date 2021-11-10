@@ -22,7 +22,7 @@ app.set("view engine", "ejs");
 
 const password = process.env.DB_PASSWORD;
 
-mongoose.connect("mongodb+srv://joe:"+password+"@goku.pna51.mongodb.net/checklist?retryWrites=true&w=majority", {
+mongoose.connect("mongodb+srv://joe:" + password + "@goku.pna51.mongodb.net/checklist?retryWrites=true&w=majority", {
   useNewUrlParser: true
 });
 
@@ -36,23 +36,31 @@ const userSchema = new mongoose.Schema({ // a part of encrypt added at new mongo
 const User = new mongoose.model("User", userSchema);
 
 
-app.get("/",(req,res)=>{
- res.render("login");
+app.get("/", (req, res) => {
+  res.render("login");
 
 
 });
 
-app.get("/login",(req,res)=>{
- res.render("login");
+app.get("/login", (req, res) => {
+  res.render("login");
 });
 
-app.post("/login",(req,res)=>{
-  User.findOne({"username":"admin"}, function(err, foundUser) {
+app.post("/login", (req, res) => {
+  const loginUSR = req.body.username;
+  const loginPWD = req.body.password;
+
+  User.findOne({
+    username: loginUSR,
+    password: loginPWD
+  }, function(err, foundUser) {
     if (err) {
       console.log(err);
     } else {
       if (foundUser) {
-        console.log(foundUser)
+        console.log(foundUser);
+      } else {
+        console.log("user or password is invalid");
       }
     }
   });
