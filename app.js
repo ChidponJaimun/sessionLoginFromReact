@@ -8,8 +8,9 @@ import mongoose from "mongoose";
 
 
 const app = express();
-const password = process.env.dbpassword;
 dotenv.config();
+const password = process.env.DB_PASSWORD;
+console.log(password);
 
 mongoose.connect("mongodb+srv://joe:"+password+"@goku.pna51.mongodb.net/checklist?retryWrites=true&w=majority", {
   useNewUrlParser: true
