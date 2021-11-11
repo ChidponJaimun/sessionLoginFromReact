@@ -5,6 +5,9 @@ import ejs from "ejs"
 import React from "react";
 import express from "express";
 import mongoose from "mongoose";
+import bcrypt from "bcrypt";
+import passport from "passport";
+import session from "session";
 
 
 
@@ -37,10 +40,43 @@ const User = new mongoose.model("User", userSchema);
 
 
 app.get("/", (req, res) => {
-  res.render("login");
+  res.render("home");
 
 
 });
+
+app.get("/register", (req, res) => {
+  res.render("register");
+});
+
+app.post("/register", (req, res) => {
+
+    if(req.body.regCode==="123456789"){
+
+      bcrypt.hash(req.body.password,10,(err,hashed)=>{
+        const newUser = new User({
+          username:req.body.username,
+          password:hashed
+        });
+        newUser.save((err)=>{
+          if(err){
+            console.log(err);
+          }else{
+            res.redirect("/login");
+          }
+        });
+
+      });
+
+
+    }else{
+      res.render("errorpage",{errorCode : "Wrong Register Code!!"})
+    }
+
+
+
+});
+
 
 app.get("/login", (req, res) => {
   res.render("login");
