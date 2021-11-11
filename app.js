@@ -6,11 +6,8 @@ import React from "react";
 import express from "express";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-import passport from "passport"
-import flash from "express-flash"
-import session from "express-session"
-import initializePassport from "./passport-config.js";
-initializePassport(passport,username =>users.find(user=>user.username === username));
+
+let logged = false;
 
 const app = express();
 dotenv.config();
@@ -19,15 +16,9 @@ app.use(express.json());
 app.use(express.urlencoded({
   extended: true
 }));
-app.use(flash());
-app.use(session({
-  secret : process.env.SESSION_SECRET,
-  resave:false,
-  saveUninitialized:false
-}));
 
-app.use(passport.initialize());
-app.use(passport.session());
+
+
 // body parser
 //ejs
 app.set("view engine", "ejs");
@@ -49,11 +40,6 @@ const userSchema = new mongoose.Schema({ // a part of encrypt added at new mongo
 const User = new mongoose.model("User", userSchema);
 
 
-app.get("/", (req, res) => {
-  res.render("home");
-
-
-});
 
 app.get("/register", (req, res) => {
   res.render("register");
@@ -83,20 +69,55 @@ app.post("/register", (req, res) => {
       res.render("errorpage",{errorCode : "Wrong Register Code!!"})
     }
 
+});
 
+app.get("/", (req, res) => {
+  if (logged === true){
+      res.render("secrets",{messages:"logged in"});
+  }else {
+      res.render("home");
+  }
 
 });
 
 
 app.get("/login", (req, res) => {
-  res.render("login");
+    res.render("login",{messages:"Welcome!!!"})
 });
 
-app.post("/login",passport.authenticate("local",{
-  successRedirect:"/",
-  failureRedirect:"login",
-  faliureFlash:true
-}))
+app.post("/login", (req, res) => {
+  const loginUSR = req.body.username;
+  let loginPWD = req.body.password;
+
+
+    User.findOne({
+      username: loginUSR
+    }, function(err, foundUser) {
+      if (err) {
+        console.log(err);
+
+      } else {
+        if(foundUser){
+          bcrypt.compare(loginPWD,foundUser.password,function(err,result){
+            if (result === true){
+              logged = true;
+                res.render("secrets",{messages:"logged in"});
+            }else{
+              res.render("login",{messages:"Wrong password"});
+            }
+          });
+        }else{
+            res.render("login",{messages:"Username not found"});
+        }
+
+      }
+    });
+
+  });
+
+
+
+
 
 
 app.listen(process.env.PORT || 3000, function() {
