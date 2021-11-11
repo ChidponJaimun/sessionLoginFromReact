@@ -6,10 +6,11 @@ import React from "react";
 import express from "express";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-import passport from "passport";
-import session from "session";
-
-
+import passport from "passport"
+import flash from "express-flash"
+import session from "express-session"
+import initializePassport from "./passport-config.js";
+initializePassport(passport,username =>users.find(user=>user.username === username));
 
 const app = express();
 dotenv.config();
@@ -18,6 +19,15 @@ app.use(express.json());
 app.use(express.urlencoded({
   extended: true
 }));
+app.use(flash());
+app.use(session({
+  secret : process.env.SESSION_SECRET,
+  resave:false,
+  saveUninitialized:false
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
 // body parser
 //ejs
 app.set("view engine", "ejs");
@@ -82,25 +92,11 @@ app.get("/login", (req, res) => {
   res.render("login");
 });
 
-app.post("/login", (req, res) => {
-  const loginUSR = req.body.username;
-  const loginPWD = req.body.password;
-
-  User.findOne({
-    username: loginUSR,
-    password: loginPWD
-  }, function(err, foundUser) {
-    if (err) {
-      console.log(err);
-    } else {
-      if (foundUser) {
-        console.log(foundUser);
-      } else {
-        console.log("user or password is invalid");
-      }
-    }
-  });
-});
+app.post("/login",passport.authenticate("local",{
+  successRedirect:"/",
+  failureRedirect:"login",
+  faliureFlash:true
+}))
 
 
 app.listen(process.env.PORT || 3000, function() {
