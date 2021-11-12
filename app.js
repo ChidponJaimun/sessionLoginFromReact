@@ -85,7 +85,7 @@ app.post("/register", (req, res) => {
 app.get("/", (req, res) => {
     session=req.session;
     if(session.userid){
-        res.send("Welcome User <a href=\'/logout'>click to logout</a>");
+          res.redirect("/secrets");
     }else{
         res.render("home");
     }
@@ -96,9 +96,6 @@ app.get("/login", (req, res) => {
     res.render("login",{messages:"Welcome!!!"})
 });
 
-app.get("/secrets", (req, res) => {
-    res.render("secrets",{messages:"Logged in."})
-});
 
 app.post("/login", (req, res) => {
   const loginUSR = req.body.username;
@@ -117,7 +114,6 @@ app.post("/login", (req, res) => {
             if (result === true){
               session=req.session;
               session.userid=loginUSR;
-              console.log(req.session);
                 res.redirect("/secrets");
             }else{
               res.render("login",{messages:"Wrong password"});
@@ -132,7 +128,9 @@ app.post("/login", (req, res) => {
 
   });
 
-
+  app.get("/secrets", (req, res) => {
+      res.render("secrets",{messages:"Logged in."})
+  });
 
 
 
