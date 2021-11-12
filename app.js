@@ -7,7 +7,7 @@ import express from "express";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import cookieParser from "cookie-parser";
-import sessions  from 'express-session';
+import sessions from 'express-session';
 
 
 const sessionAge = 1000 * 60 * 60;
@@ -23,10 +23,12 @@ app.use(express.urlencoded({
 app.use(cookieParser());
 
 app.use(sessions({
-    secret: process.env.SESSION_SECRET,
-    saveUninitialized:true,
-    cookie: { maxAge: sessionAge },
-    resave: false
+  secret: process.env.SESSION_SECRET,
+  saveUninitialized: true,
+  cookie: {
+    maxAge: sessionAge
+  },
+  resave: false
 }));
 
 
@@ -58,42 +60,46 @@ app.get("/register", (req, res) => {
 
 app.post("/register", (req, res) => {
 
-    if(req.body.regCode==="123456789"){
+  if (req.body.regCode === "123456789") {
 
-      bcrypt.hash(req.body.password,10,(err,hashed)=>{
-        const newUser = new User({
-          username:req.body.username,
-          password:hashed
-        });
-        newUser.save((err)=>{
-          if(err){
-            console.log(err);
-          }else{
-            res.redirect("/login");
-          }
-        });
-
+    bcrypt.hash(req.body.password, 10, (err, hashed) => {
+      const newUser = new User({
+        username: req.body.username,
+        password: hashed
+      });
+      newUser.save((err) => {
+        if (err) {
+          console.log(err);
+        } else {
+          res.redirect("/login");
+        }
       });
 
+    });
 
-    }else{
-      res.render("errorpage",{errorCode : "Wrong Register Code!!"})
-    }
+
+  } else {
+    res.render("errorpage", {
+      errorCode: "Wrong Register Code!!"
+    })
+  }
 
 });
 
 app.get("/", (req, res) => {
-    session=req.session;
-    if(session.userid){
-          res.redirect("/secrets");
-    }else{
-        res.render("home");
-    }
+  session = req.session;
+  if (session.userid) {
+    res.redirect("/secrets");
+  } else {
+    res.render("home");
+  }
 });
 
 
 app.get("/login", (req, res) => {
-    res.render("login",{messages:"Welcome!!!"})
+  res.render("login", {
+    messages: "Welcome!!!"
+  })
 });
 
 
@@ -102,35 +108,55 @@ app.post("/login", (req, res) => {
   let loginPWD = req.body.password;
 
 
-    User.findOne({
-      username: loginUSR
-    }, function(err, foundUser) {
-      if (err) {
-        console.log(err);
+  User.findOne({
+    username: loginUSR
+  }, function(err, foundUser) {
+    if (err) {
+      console.log(err);
 
+    } else {
+      if (foundUser) {
+        bcrypt.compare(loginPWD, foundUser.password, function(err, result) {
+          if (result === true) {
+            session = req.session;
+            session.userid = loginUSR;
+            res.redirect("/secrets");
+          } else {
+            res.render("login", {
+              messages: "Wrong password"
+            });
+          }
+        });
       } else {
-        if(foundUser){
-          bcrypt.compare(loginPWD,foundUser.password,function(err,result){
-            if (result === true){
-              session=req.session;
-              session.userid=loginUSR;
-                res.redirect("/secrets");
-            }else{
-              res.render("login",{messages:"Wrong password"});
-            }
-          });
-        }else{
-            res.render("login",{messages:"Username not found"});
-        }
-
+        res.render("login", {
+          messages: "Username not found"
+        });
       }
+
+    }
+  });
+
+});
+
+app.get("/secrets", (req, res) => {
+
+  session = req.session;
+  if (session.userid) {
+    res.render("secrets", {
+      messages: "Logged in."
     });
+  } else {
+    res.render("login", {
+      messages: "Please Logged in."
+    });
+  }
 
-  });
+});
 
-  app.get("/secrets", (req, res) => {
-      res.render("secrets",{messages:"Logged in."})
-  });
+app.get('/logout',(req,res) => {
+    req.session.destroy();
+    res.redirect('/');
+});
 
 
 
