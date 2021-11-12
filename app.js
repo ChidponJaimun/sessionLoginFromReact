@@ -6,8 +6,12 @@ import React from "react";
 import express from "express";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
+import cookieParser from "cookie-parser";
+import sessions  from 'express-session';
 
-let logged = false;
+
+const sessionAge = 1000 * 60 * 60;
+var session;
 
 const app = express();
 dotenv.config();
@@ -16,7 +20,14 @@ app.use(express.json());
 app.use(express.urlencoded({
   extended: true
 }));
+app.use(cookieParser());
 
+app.use(sessions({
+    secret: process.env.SESSION_SECRET,
+    saveUninitialized:true,
+    cookie: { maxAge: sessionAge },
+    resave: false
+}));
 
 
 // body parser
@@ -72,17 +83,21 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  if (logged === true){
-      res.render("secrets",{messages:"logged in"});
-  }else {
-      res.render("home");
-  }
-
+    session=req.session;
+    if(session.userid){
+        res.send("Welcome User <a href=\'/logout'>click to logout</a>");
+    }else{
+        res.render("home");
+    }
 });
 
 
 app.get("/login", (req, res) => {
     res.render("login",{messages:"Welcome!!!"})
+});
+
+app.get("/secrets", (req, res) => {
+    res.render("secrets",{messages:"Logged in."})
 });
 
 app.post("/login", (req, res) => {
@@ -100,8 +115,10 @@ app.post("/login", (req, res) => {
         if(foundUser){
           bcrypt.compare(loginPWD,foundUser.password,function(err,result){
             if (result === true){
-              logged = true;
-                res.render("secrets",{messages:"logged in"});
+              session=req.session;
+              session.userid=loginUSR;
+              console.log(req.session);
+                res.redirect("/secrets");
             }else{
               res.render("login",{messages:"Wrong password"});
             }
