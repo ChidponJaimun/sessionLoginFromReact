@@ -89,9 +89,9 @@ app.post("/register", (req, res) => {
 
 
   } else {
-    res.render("errorpage", {
-      errorCode: "Wrong Register Code!!"
-    })
+    res.send({
+      error:"Wrong Register Code"
+    });
   }
 
 });
@@ -106,6 +106,11 @@ app.get("/", (req, res) => {
   // }
 });
 
+app.post("/", (req, res) => {
+  res.send({
+    text:"WTF",author:"WTFKER"
+  })
+});
 
 // app.get("/login", (req, res) => {
 //   res.render("login", {
