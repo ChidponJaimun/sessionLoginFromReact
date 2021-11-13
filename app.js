@@ -8,6 +8,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import cookieParser from "cookie-parser";
 import sessions from 'express-session';
+import cors from "cors"
 
 
 const sessionAge = 1000 * 60 * 60;
@@ -17,10 +18,18 @@ const app = express();
 dotenv.config();
 app.use(express.static("public"));
 app.use(express.json());
+app.use(cors());
 app.use(express.urlencoded({
   extended: true
 }));
-app.use(cookieParser("secretcode"));
+app.use(cookieParser("secret"));
+//axios
+// app.use(function(req, res, next) {
+//   res.header('Access-Control-Allow-Origin', '*');
+//   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+//   next();
+// });
+// axios
 
 app.use(sessions({
   secret: process.env.SESSION_SECRET,
@@ -55,6 +64,7 @@ const User = new mongoose.model("User", userSchema);
 
 
 app.get("/register", (req, res) => {
+  console.log("Registering");
   res.render("register");
 });
 
@@ -87,76 +97,64 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  session = req.session;
-  if (session.userid) {
-    res.redirect("/secrets");
-  } else {
-    res.render("home");
-  }
+  console.log("WTF")
+  // session = req.session;
+  // if (session.userid) {
+  //   res.redirect("/secrets");
+  // } else {
+  //   res.render("home");
+  // }
 });
 
 
-app.get("/login", (req, res) => {
-  res.render("login", {
-    messages: "Welcome!!!"
-  })
-});
+// app.get("/login", (req, res) => {
+//   res.render("login", {
+//     messages: "Welcome!!!"
+//   })
+// });
 
 
-app.post("/login", (req, res) => {
-  const loginUSR = req.body.username;
-  let loginPWD = req.body.password;
+// app.post("/login", (req, res) => {
+//   const loginUSR = req.body.username;
+//   let loginPWD = req.body.password;
 
 
-  User.findOne({
-    username: loginUSR
-  }, function(err, foundUser) {
-    if (err) {
-      console.log(err);
+//   User.findOne({
+//     username: loginUSR
+//   }, function(err, foundUser) {
+//     if (err) {
+//       console.log(err);
 
-    } else {
-      if (foundUser) {
-        bcrypt.compare(loginPWD, foundUser.password, function(err, result) {
-          if (result === true) {
-            session = req.session;
-            session.userid = loginUSR;
-            res.redirect("/secrets");
-          } else {
-            res.render("login", {
-              messages: "Wrong password"
-            });
-          }
-        });
-      } else {
-        res.render("login", {
-          messages: "Username not found"
-        });
-      }
+//     } else {
+//       if (foundUser) {
+//         bcrypt.compare(loginPWD, foundUser.password, function(err, result) {
+//           if (result === true) {
+//             session = req.session;
+//             session.userid = loginUSR;
+//             res.redirect("/secrets");
+//           } else {
+//             res.render("login", {
+//               messages: "Wrong password"
+//             });
+//           }
+//         });
+//       } else {
+//         res.render("login", {
+//           messages: "Username not found"
+//         });
+//       }
 
-    }
-  });
+//     }
+//   });
 
-});
+// });
 
-app.get("/secrets", (req, res) => {
 
-  session = req.session;
-  if (session.userid) {
-    res.render("secrets", {
-      messages: "Logged in."
-    });
-  } else {
-    res.render("login", {
-      messages: "Please Logged in."
-    });
-  }
 
-});
-
-app.get('/logout',(req,res) => {
-    req.session.destroy();
-    res.redirect('/');
-});
+// app.get('/logout',(req,res) => {
+//     req.session.destroy();
+//     res.redirect('/');
+// });
 
 
 
