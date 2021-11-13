@@ -59,7 +59,7 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-
+  console.log("Registering");
   if (req.body.regCode === "123456789") {
 
     bcrypt.hash(req.body.password, 10, (err, hashed) => {
