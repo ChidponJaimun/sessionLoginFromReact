@@ -79,9 +79,13 @@ app.post("/register", (req, res) => {
       });
       newUser.save((err) => {
         if (err) {
-          console.log(err);
+          res.send({
+            responseMsg:err
+          });
         } else {
-          res.redirect("/login");
+          res.send({
+            responseMsg:"Register Successful"
+          });
         }
       });
 
@@ -89,9 +93,9 @@ app.post("/register", (req, res) => {
 
 
   } else {
-    res.render("errorpage", {
-      errorCode: "Wrong Register Code!!"
-    })
+    res.send({
+      responseMsg:"Wrong Register Code"
+    });
   }
 
 });
@@ -106,6 +110,11 @@ app.get("/", (req, res) => {
   // }
 });
 
+app.post("/", (req, res) => {
+  res.send({
+    text:"WTF",author:"WTFKER"
+  })
+});
 
 // app.get("/login", (req, res) => {
 //   res.render("login", {
@@ -114,47 +123,54 @@ app.get("/", (req, res) => {
 // });
 
 
-// app.post("/login", (req, res) => {
-//   const loginUSR = req.body.username;
-//   let loginPWD = req.body.password;
+app.post("/login", (req, res) => {
+  const loginUSR = req.body.username;
+  let loginPWD = req.body.password;
 
 
-//   User.findOne({
-//     username: loginUSR
-//   }, function(err, foundUser) {
-//     if (err) {
-//       console.log(err);
+  User.findOne({
+    username: loginUSR
+  }, function(err, foundUser) {
+    if (err) {
+      res.send({
+        responseMsg:err
+      });
 
-//     } else {
-//       if (foundUser) {
-//         bcrypt.compare(loginPWD, foundUser.password, function(err, result) {
-//           if (result === true) {
-//             session = req.session;
-//             session.userid = loginUSR;
-//             res.redirect("/secrets");
-//           } else {
-//             res.render("login", {
-//               messages: "Wrong password"
-//             });
-//           }
-//         });
-//       } else {
-//         res.render("login", {
-//           messages: "Username not found"
-//         });
-//       }
+    } else {
+      if (foundUser) {
+        bcrypt.compare(loginPWD, foundUser.password, function(err, result) {
+          if (result === true) {
+            session = req.session;
+            session.userid = loginUSR;
+            res.send({
+              responseMsg:"Successfully Login"
+            });
+          } else {
+            res.send({
+              responseMsg:"Wrong Password. Please retry again."
+            });
+          }
+        });
+      } else {
+        res.send({
+          responseMsg:"Username not found"
+        });
+      
+      }
 
-//     }
-//   });
+    }
+  });
 
-// });
+});
 
 
 
-// app.get('/logout',(req,res) => {
-//     req.session.destroy();
-//     res.redirect('/');
-// });
+app.post('/logout',(req,res) => {
+    req.session.destroy();
+    res.send({
+      responseMsg:"Successfully Logout"
+    });
+});
 
 
 
