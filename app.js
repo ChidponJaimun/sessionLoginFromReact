@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({
   extended: true
 }));
-app.use(cookieParser());
+app.use(cookieParser("secretcode"));
 
 app.use(sessions({
   secret: process.env.SESSION_SECRET,
@@ -161,6 +161,6 @@ app.get('/logout',(req,res) => {
 
 
 
-app.listen(process.env.PORT || 3000, function() {
+app.listen(process.env.PORT || 5000, function() {
   console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
 });
