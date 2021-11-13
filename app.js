@@ -111,9 +111,15 @@ app.get("/", (req, res) => {
 });
 
 app.post("/", (req, res) => {
-  res.send({
-    text:"WTF",author:"WTFKER"
-  })
+   session = req.session;
+  if (session.userid) {
+    res.send({
+      text:"WTF",author:"WTFKER"
+    })
+  } else {
+    res.send("Need to login first");
+  }
+ 
 });
 
 // app.get("/login", (req, res) => {
