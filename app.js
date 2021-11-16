@@ -22,7 +22,7 @@ app.use(cors());
 app.use(express.urlencoded({
   extended: true
 }));
-app.use(cookieParser("secret"));
+app.use(cookieParser());
 //axios
 // app.use(function(req, res, next) {
 //   res.header('Access-Control-Allow-Origin', '*');
