@@ -2,27 +2,26 @@ import dotenv from 'dotenv'; // dotenv import
 import ejs from "ejs"
 // const _ from "lodash"
 // const React from "react"
-import React from "react";
+import React, { useState } from "react";
 import express from "express";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-import cookieParser from "cookie-parser";
-import sessions from 'express-session';
 import cors from "cors"
+import cache from "memory-cache";
 
 
-const sessionAge = 1000 * 60 * 60;
-var session;
+
 
 const app = express();
 dotenv.config();
 app.use(express.static("public"));
+// app.use(express.static(__dirname));
 app.use(express.json());
 app.use(cors());
 app.use(express.urlencoded({
   extended: true
 }));
-app.use(cookieParser());
+
 //axios
 // app.use(function(req, res, next) {
 //   res.header('Access-Control-Allow-Origin', '*');
@@ -31,14 +30,7 @@ app.use(cookieParser());
 // });
 // axios
 
-app.use(sessions({
-  secret: process.env.SESSION_SECRET,
-  saveUninitialized: true,
-  cookie: {
-    maxAge: sessionAge
-  },
-  resave: false
-}));
+
 
 
 // body parser
@@ -61,7 +53,7 @@ const userSchema = new mongoose.Schema({ // a part of encrypt added at new mongo
 
 const User = new mongoose.model("User", userSchema);
 
-
+var loginCollector = [];
 
 app.get("/register", (req, res) => {
   console.log("Registering");
@@ -100,8 +92,9 @@ app.post("/register", (req, res) => {
 
 });
 
+
 app.get("/", (req, res) => {
-  console.log("WTF")
+  console.log(cache.get("loginToken"));
   // session = req.session;
   // if (session.userid) {
   //   res.redirect("/secrets");
@@ -111,13 +104,17 @@ app.get("/", (req, res) => {
 });
 
 app.post("/", (req, res) => {
-   session = req.session;
-  if (session.userid) {
+
+  
+  // if (session.userid !== "")  {
+    if (true)  {
     res.send({
       text:"WTF",author:"WTFKER"
-    })
+    });
   } else {
-    res.send("Need to login first");
+    res.send({
+      text:"Need Login",author:"Need to Login First"
+    })
   }
  
 });
@@ -132,7 +129,7 @@ app.post("/", (req, res) => {
 app.post("/login", (req, res) => {
   const loginUSR = req.body.username;
   let loginPWD = req.body.password;
-
+ 
 
   User.findOne({
     username: loginUSR
@@ -146,10 +143,24 @@ app.post("/login", (req, res) => {
       if (foundUser) {
         bcrypt.compare(loginPWD, foundUser.password, function(err, result) {
           if (result === true) {
-            session = req.session;
-            session.userid = loginUSR;
+            var token = Math.floor(Math.random() * 10000000000);
+
+
+            var tempToken = {usernameToken:loginUSR , token:token  }  // send this
+            cache.put('loginToken', tempToken); 
+
+            var temp =  loginCollector.filter(ele=>ele.usernameToken!==loginUSR);
+            loginCollector = temp;
+            loginCollector.push(cache.get("loginToken")); 
+            
+            
+             
+             
+            console.log(loginCollector);
+           
+            
             res.send({
-              responseMsg:"Successfully Login"
+              responseMsg:"Successfully Login" , loginToken:tempToken  // to here
             });
           } else {
             res.send({
@@ -170,13 +181,33 @@ app.post("/login", (req, res) => {
 });
 
 
+app.post('/loginCheck',(req,res) => {
+  const loginUSR = req.body.user;
+  const loginToken = req.body.token;
+  var tempRes = loginCollector.find(elle=>elle.usernameToken===loginUSR && elle.token===loginToken)
+  console.log("checking");
+  if(tempRes){
+    res.send({
+      responseMsg:"pass"
+    });
+  }else{
+    res.send({
+      responseMsg:"Not Pass"
+    });
+  }
+  
+});
 
 app.post('/logout',(req,res) => {
-    req.session.destroy();
+   
+
+   
     res.send({
       responseMsg:"Successfully Logout"
     });
 });
+
+
 
 
 
