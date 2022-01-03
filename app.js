@@ -1,13 +1,10 @@
 import dotenv from 'dotenv'; // dotenv import
-import ejs from "ejs"
-// const _ from "lodash"
-// const React from "react"
-import React, { useState } from "react";
 import express from "express";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import cors from "cors"
 import cache from "memory-cache";
+import line from 'line-notify-nodejs';
 
 
 
@@ -21,6 +18,16 @@ app.use(cors());
 app.use(express.urlencoded({
   extended: true
 }));
+
+const lineNotify = line(process.env.CLIENT_TOKEN);
+
+function lineAlert(msg) {
+  lineNotify.notify({
+    message: msg,
+  }).then(() => {
+    console.log('send completed!');
+  });
+}
 
 //axios
 // app.use(function(req, res, next) {
@@ -117,6 +124,21 @@ app.post("/", (req, res) => {
     })
   }
  
+});
+
+app.post("/saveResult", (req, res) => {
+  const line = req.body.Line;
+  const machine = req.body.Machine;
+  const rootCause = req.body.rootCause;
+  const emergencyLevel = req.body.emergencyLevel;
+  const solveTime = req.body.solveTime;
+
+  console.log(line , machine , rootCause , emergencyLevel , solveTime);
+  res.send({
+    responseMsg:"Good" 
+  });
+
+  lineAlert("\n Problem Line : "+line+"\n Machine : "+machine+"\n Root Cause : "+rootCause+ "\n Emergency Level : "+emergencyLevel+"\n Solve Time : "+solveTime);
 });
 
 // app.get("/login", (req, res) => {
